@@ -1,0 +1,75 @@
+import {useRef, useState} from "react";
+import {Pressable, Text, View} from 'react-native';
+
+import {Ionicons} from "@expo/vector-icons";
+
+import fatty from "@/utils/fatty";
+import {Link} from "expo-router";
+
+function PostActions({
+    numberOfComments,
+    numberOfLikes,
+    likedByCurrentUser,
+    postId,
+    isBookmarked,
+    handleBookmark
+}) {
+
+    const [isLiked, setIsLiked] = useState(likedByCurrentUser);
+    const numberOfLikesRef = useRef(numberOfLikes);
+
+    function handleLike() {
+        fatty('/api/user/', 'PATCH', {liked_post: postId})
+            .then(data => {
+                if (data.success) {
+                    isLiked
+                        ? numberOfLikesRef.current--
+                        : numberOfLikesRef.current++
+
+                    setIsLiked(i => !i);
+                }
+            });
+    }
+
+    return (
+        <>
+            <View className="flex-row justify-end pl-2">
+                <Link href={`/posts/${postId}`}>
+                    <View className="items-center flex-row">
+                        <Ionicons name="chatbubble-outline" size={19} color="gray"/>
+                        <Text className="ml-1 text-sm text-gray-600">
+                            {numberOfComments}
+                        </Text>
+                    </View>
+                </Link>
+
+                <Pressable
+                    onPress={handleLike}
+                    className="flex-row items-center ml-8"
+                >
+                    <Ionicons
+                        name={isLiked ? "heart" : "heart-outline"}
+                        size={19}
+                        color={isLiked ? "red" : "gray"}
+                    />
+                    <Text className="ml-1 text-sm text-gray-600">
+                        {numberOfLikesRef.current}
+                    </Text>
+                </Pressable>
+
+                <Pressable
+                    onPress={handleBookmark}
+                    className="flex-row items-center ml-8"
+                >
+                    <Ionicons
+                        name={isBookmarked ? "bookmark" : "bookmark-outline"}
+                        size={19}
+                        color={isBookmarked ? "#3daad3" : "gray"}
+                    />
+                </Pressable>
+            </View>
+        </>
+    );
+}
+
+export default PostActions;
